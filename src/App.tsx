@@ -64,9 +64,8 @@ export default function App() {
       <input 
         type="file" 
         accept="image/*" 
-        capture="environment" 
         onChange={handleImageChange} 
-        style={{ margin: '20px 0', padding: '10px' }}
+        style={{ margin: '20px 0', padding: '10px', width: '100%', boxSizing: 'border-box' }}
       />
 
       {previewUrl && (
