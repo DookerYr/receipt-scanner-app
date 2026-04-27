@@ -56,59 +56,126 @@ export default function App() {
     }
   };
 
-  return (
-    <div style={{ fontFamily: 'system-ui', padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-      <h2>סורק קבלות לעסקים 🏢</h2>
-      <p>לזיהוי ואיסוף לידים מקבלות</p>
+// ... (כל הקוד הקודם נשאר אותו דבר עד ה-return)
 
-      <input 
-        type="file" 
-        accept="image/*" 
-        onChange={handleImageChange} 
-        style={{ margin: '20px 0', padding: '10px', width: '100%', boxSizing: 'border-box' }}
-      />
+return (
+  <div style={{ fontFamily: 'system-ui', padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
+    <h2 style={{ color: '#003580' }}>סורק קבלות Amex 💳</h2>
+    <p style={{ fontSize: '0.9rem', color: '#555' }}>
+      העסק לא מכבד אמריקן אקספרס? <br/>
+      צלם את הקבלה ואנחנו נטפל בזה.
+    </p>
 
-      {previewUrl && (
-        <div style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-          
-          <button 
-            onClick={handleScan} 
-            disabled={isScanning}
-            style={{
-              backgroundColor: isScanning ? '#ccc' : '#007BFF',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '5px',
-              fontSize: '16px',
-              cursor: isScanning ? 'not-allowed' : 'pointer',
-              marginBottom: '15px',
-              width: '100%'
-            }}
-          >
-            {isScanning ? 'מנתח נתוני עסק... ⏳' : '🔍 חלץ נתוני זיהוי'}
-          </button>
+    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '20px 0' }}>
+      
+      {/* כפתור צילום במצלמה */}
+      <label style={{
+        backgroundColor: '#0070d1',
+        color: 'white',
+        padding: '12px 15px',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '5px',
+        fontWeight: 'bold'
+      }}>
+        <span>📸 צלם קבלה</span>
+        <input 
+          type="file" 
+          accept="image/*" 
+          capture="environment" 
+          onChange={handleImageChange} 
+          style={{ display: 'none' }} 
+        />
+      </label>
 
-          <img 
-            src={previewUrl} 
-            alt="קבלה שנסרקה" 
-            style={{ width: '100%', borderRadius: '4px', maxHeight: '300px', objectFit: 'contain' }} 
-          />
-        </div>
-      )}
-
-      {extractedData && (
-        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#e2f0fb', border: '1px solid #b6d4fe', borderRadius: '8px', color: '#084298', textAlign: 'right' }}>
-          <h3 style={{ marginTop: 0 }}>📋 כרטיס עסק:</h3>
-          <p><strong>שם עסק:</strong> {extractedData.businessName || "לא זוהה"}</p>
-          <p><strong>ח.פ / ע.מ:</strong> {extractedData.businessId || "לא זוהה"}</p>
-          <p><strong>טלפון:</strong> {extractedData.phone || "לא זוהה"}</p>
-          <p><strong>תאריך:</strong> {extractedData.date || "לא זוהה"}</p>
-          <hr style={{ borderColor: '#b6d4fe', margin: '10px 0' }}/>
-          <p><strong>חברה סולקת:</strong> {extractedData.clearingCompany || "לא מופיע בקבלה"}</p>
-          <p><strong>סוג כרטיס:</strong> {extractedData.cardType || "לא מופיע בקבלה"}</p>
-        </div>
-      )}
+      {/* כפתור בחירה מהגלריה */}
+      <label style={{
+        backgroundColor: '#f0f2f5',
+        color: '#333',
+        padding: '12px 15px',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        border: '1px solid #ccc',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '5px',
+        fontWeight: 'bold'
+      }}>
+        <span>🖼️ מהגלריה</span>
+        <input 
+          type="file" 
+          accept="image/*" 
+          onChange={handleImageChange} 
+          style={{ display: 'none' }} 
+        />
+      </label>
     </div>
-  );
+
+    {/* תצוגה מקדימה וכפתור חילוץ נתונים */}
+    {previewUrl && (
+      <div style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+        <button 
+          onClick={handleScan} 
+          disabled={isScanning}
+          style={{
+            backgroundColor: isScanning ? '#ccc' : '#003580',
+            color: 'white',
+            padding: '12px 20px',
+            border: 'none',
+            borderRadius: '5px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: isScanning ? 'not-allowed' : 'pointer',
+            marginBottom: '15px',
+            width: '100%'
+          }}
+        >
+          {isScanning ? 'מנתח נתוני עסק... ⏳' : '🔍 חלץ נתוני זיהוי'}
+        </button>
+        <img 
+          src={previewUrl} 
+          alt="קבלה שנסרקה" 
+          style={{ width: '100%', borderRadius: '4px', maxHeight: '250px', objectFit: 'contain' }} 
+        />
+      </div>
+    )}
+
+    {/* הצגת כרטיס העסק (נשאר כמו קודם) */}
+    {extractedData && (
+      <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#e2f0fb', border: '1px solid #b6d4fe', borderRadius: '8px', color: '#084298', textAlign: 'right' }}>
+        <h3 style={{ marginTop: 0 }}>📋 כרטיס עסק לטיפול:</h3>
+        <p><strong>שם עסק:</strong> {extractedData.businessName || "לא זוהה"}</p>
+        <p><strong>ח.פ / ע.מ:</strong> {extractedData.businessId || "לא זוהה"}</p>
+        <p><strong>טלפון:</strong> {extractedData.phone || "לא זוהה"}</p>
+        <p><strong>תאריך:</strong> {extractedData.date || "לא זוהה"}</p>
+        
+        <button 
+          onClick={handleSendToSystem} 
+          disabled={isSending}
+          style={{
+            backgroundColor: isSending ? '#ccc' : '#198754',
+            color: 'white',
+            padding: '12px 20px',
+            border: 'none',
+            borderRadius: '5px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: isSending ? 'not-allowed' : 'pointer',
+            marginTop: '15px',
+            width: '100%'
+          }}
+        >
+          {isSending ? 'משגר ליד... 🚀' : '📤 דווח על העסק'}
+        </button>
+      </div>
+    )}
+  </div>
+);
+}
 }
