@@ -6,6 +6,7 @@ export default function App() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [extractedData, setExtractedData] = useState<any>(null);
+  const [isSending, setIsSending] = useState<boolean>(false);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -21,13 +22,10 @@ export default function App() {
     setIsScanning(true);
 
     try {
-      // 1. קוראים את התמונה לפורמט Base64
       const reader = new FileReader();
-      
       reader.onloadend = async () => {
         const base64Data = (reader.result as string).split(',')[1];
         
-        // 2. שולחים את התמונה ל-Netlify Function שלנו במקום לגוגל!
         const response = await fetch('/.netlify/functions/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -40,15 +38,13 @@ export default function App() {
         const data = await response.json();
 
         if (response.ok) {
-          setExtractedData(data); // הנתונים הנקיים חוזרים מהשרת שלנו
+          setExtractedData(data);
         } else {
           alert("שגיאה מהשרת: " + (data.error || "לא ניתן לפענח את הקבלה"));
         }
         setIsScanning(false);
       };
-
       reader.readAsDataURL(imageFile);
-
     } catch (error) {
       console.error("שגיאת תקשורת:", error);
       alert("לא הצלחנו להתחבר לשרת.");
@@ -56,126 +52,145 @@ export default function App() {
     }
   };
 
-// ... (כל הקוד הקודם נשאר אותו דבר עד ה-return)
+  const handleSendToSystem = async () => {
+    setIsSending(true);
+    try {
+      // כאן תשים את ה-Webhook שלך כשתרצה
+      const WEBHOOK_URL = "YOUR_MAKE_WEBHOOK_URL_HERE"; 
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(extractedData)
+      });
 
-return (
-  <div style={{ fontFamily: 'system-ui', padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-    <h2 style={{ color: '#003580' }}>סורק קבלות Amex 💳</h2>
-    <p style={{ fontSize: '0.9rem', color: '#555' }}>
-      העסק לא מכבד אמריקן אקספרס? <br/>
-      צלם את הקבלה ואנחנו נטפל בזה.
-    </p>
+      if (response.ok) {
+        alert("✅ הדיווח נשלח בהצלחה!");
+      } else {
+        alert("❌ תקלה בשליחת הדיווח.");
+      }
+    } catch (error) {
+      console.error("Webhook error:", error);
+      alert("❌ לא הצלחנו ליצור קשר עם המערכת.");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
-    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '20px 0' }}>
-      
-      {/* כפתור צילום במצלמה */}
-      <label style={{
-        backgroundColor: '#0070d1',
-        color: 'white',
-        padding: '12px 15px',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '5px',
-        fontWeight: 'bold'
-      }}>
-        <span>📸 צלם קבלה</span>
-        <input 
-          type="file" 
-          accept="image/*" 
-          capture="environment" 
-          onChange={handleImageChange} 
-          style={{ display: 'none' }} 
-        />
-      </label>
+  return (
+    <div style={{ fontFamily: 'system-ui', padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
+      <h2 style={{ color: '#003580' }}>סורק קבלות Amex 💳</h2>
+      <p style={{ fontSize: '0.9rem', color: '#555' }}>
+        העסק לא מכבד אמריקן אקספרס? <br/>
+        צלם את הקבלה ואנחנו נטפל בזה.
+      </p>
 
-      {/* כפתור בחירה מהגלריה */}
-      <label style={{
-        backgroundColor: '#f0f2f5',
-        color: '#333',
-        padding: '12px 15px',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        border: '1px solid #ccc',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '5px',
-        fontWeight: 'bold'
-      }}>
-        <span>🖼️ מהגלריה</span>
-        <input 
-          type="file" 
-          accept="image/*" 
-          onChange={handleImageChange} 
-          style={{ display: 'none' }} 
-        />
-      </label>
-    </div>
-
-    {/* תצוגה מקדימה וכפתור חילוץ נתונים */}
-    {previewUrl && (
-      <div style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-        <button 
-          onClick={handleScan} 
-          disabled={isScanning}
-          style={{
-            backgroundColor: isScanning ? '#ccc' : '#003580',
-            color: 'white',
-            padding: '12px 20px',
-            border: 'none',
-            borderRadius: '5px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            cursor: isScanning ? 'not-allowed' : 'pointer',
-            marginBottom: '15px',
-            width: '100%'
-          }}
-        >
-          {isScanning ? 'מנתח נתוני עסק... ⏳' : '🔍 חלץ נתוני זיהוי'}
-        </button>
-        <img 
-          src={previewUrl} 
-          alt="קבלה שנסרקה" 
-          style={{ width: '100%', borderRadius: '4px', maxHeight: '250px', objectFit: 'contain' }} 
-        />
-      </div>
-    )}
-
-    {/* הצגת כרטיס העסק (נשאר כמו קודם) */}
-    {extractedData && (
-      <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#e2f0fb', border: '1px solid #b6d4fe', borderRadius: '8px', color: '#084298', textAlign: 'right' }}>
-        <h3 style={{ marginTop: 0 }}>📋 כרטיס עסק לטיפול:</h3>
-        <p><strong>שם עסק:</strong> {extractedData.businessName || "לא זוהה"}</p>
-        <p><strong>ח.פ / ע.מ:</strong> {extractedData.businessId || "לא זוהה"}</p>
-        <p><strong>טלפון:</strong> {extractedData.phone || "לא זוהה"}</p>
-        <p><strong>תאריך:</strong> {extractedData.date || "לא זוהה"}</p>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '20px 0' }}>
         
-        <button 
-          onClick={handleSendToSystem} 
-          disabled={isSending}
-          style={{
-            backgroundColor: isSending ? '#ccc' : '#198754',
-            color: 'white',
-            padding: '12px 20px',
-            border: 'none',
-            borderRadius: '5px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            cursor: isSending ? 'not-allowed' : 'pointer',
-            marginTop: '15px',
-            width: '100%'
-          }}
-        >
-          {isSending ? 'משגר ליד... 🚀' : '📤 דווח על העסק'}
-        </button>
+        {/* כפתור צילום במצלמה */}
+        <label style={{
+          backgroundColor: '#0070d1',
+          color: 'white',
+          padding: '12px 15px',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '5px',
+          fontWeight: 'bold'
+        }}>
+          <span>📸 צלם קבלה</span>
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" 
+            onChange={handleImageChange} 
+            style={{ display: 'none' }} 
+          />
+        </label>
+
+        {/* כפתור בחירה מהגלריה */}
+        <label style={{
+          backgroundColor: '#f0f2f5',
+          color: '#333',
+          padding: '12px 15px',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          border: '1px solid #ccc',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '5px',
+          fontWeight: 'bold'
+        }}>
+          <span>🖼️ מהגלריה</span>
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleImageChange} 
+            style={{ display: 'none' }} 
+          />
+        </label>
       </div>
-    )}
-  </div>
-);
-}
+
+      {previewUrl && (
+        <div style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+          <button 
+            onClick={handleScan} 
+            disabled={isScanning}
+            style={{
+              backgroundColor: isScanning ? '#ccc' : '#003580',
+              color: 'white',
+              padding: '12px 20px',
+              border: 'none',
+              borderRadius: '5px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: isScanning ? 'not-allowed' : 'pointer',
+              marginBottom: '15px',
+              width: '100%'
+            }}
+          >
+            {isScanning ? 'מנתח נתוני עסק... ⏳' : '🔍 חלץ נתוני זיהוי'}
+          </button>
+          <img 
+            src={previewUrl} 
+            alt="קבלה שנסרקה" 
+            style={{ width: '100%', borderRadius: '4px', maxHeight: '250px', objectFit: 'contain' }} 
+          />
+        </div>
+      )}
+
+      {extractedData && (
+        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#e2f0fb', border: '1px solid #b6d4fe', borderRadius: '8px', color: '#084298', textAlign: 'right' }}>
+          <h3 style={{ marginTop: 0 }}>📋 כרטיס עסק לטיפול:</h3>
+          <p><strong>שם עסק:</strong> {extractedData.businessName || "לא זוהה"}</p>
+          <p><strong>ח.פ / ע.מ:</strong> {extractedData.businessId || "לא זוהה"}</p>
+          <p><strong>טלפון:</strong> {extractedData.phone || "לא זוהה"}</p>
+          <p><strong>תאריך:</strong> {extractedData.date || "לא זוהה"}</p>
+          
+          <button 
+            onClick={handleSendToSystem} 
+            disabled={isSending}
+            style={{
+              backgroundColor: isSending ? '#ccc' : '#198754',
+              color: 'white',
+              padding: '12px 20px',
+              border: 'none',
+              borderRadius: '5px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: isSending ? 'not-allowed' : 'pointer',
+              marginTop: '15px',
+              width: '100%'
+            }}
+          >
+            {isSending ? 'משגר ליד... 🚀' : '📤 דווח על העסק'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
