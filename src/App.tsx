@@ -55,7 +55,7 @@ export default function App() {
   const handleSendToSystem = async () => {
     setIsSending(true);
     try {
-      // כאן תשים את ה-Webhook שלך כשתרצה
+      // https://script.google.com/macros/s/AKfycbxUq2iKVvDunkE3rX15cmvGrZdM39T37WLCV4QgbsiKz7sP9RLOJJrAC-pslZFmbRU/exec
       const WEBHOOK_URL = "YOUR_MAKE_WEBHOOK_URL_HERE"; 
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
