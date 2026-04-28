@@ -1,36 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// פלטת צבעים יוקרתית (Amex Premium Blue)
 const COLORS = {
   background: '#fff',
-  primaryBlue: '#001739', // כחול עמוק מאוד, יוקרתי
-  brandBlue: '#0070d1', // כחול אמקס
-  accentGold: '#D4AF37', // זהב עדין
+  primaryBlue: '#001739',
+  brandBlue: '#0070d1',
+  accentGold: '#D4AF37',
   textPrimary: '#333',
   textSecondary: '#666',
-  buttonAccept: '#198754', // ירוק שליחה
-  buttonReject: '#dc3545', // אדום דחייה
+  buttonAccept: '#198754',
+  buttonReject: '#dc3545',
 };
 
-// הגדרת המצבים של חלון הדיאלוג
 type UI_STAGE = 
-  | 'IDLE'                   // מחכה להעלאת תמונה
-  | 'SCANNING'               // מנתח אוטומטית
-  | 'SCANNED_CONFIRMING'     // מציג תוצאות ושואל "האם נכון?"
-  | 'REJECTED_OPTIONS'       // המשתמש אמר "לא נכון"
-  | 'ACCEPTED_ADDING_COMMENT' // המשתמש אמר "כן נכון", שואל על הערה
-  | 'SENDING'                // משגר נתונים
-  | 'DONE';                  // סיום
+  | 'IDLE' 
+  | 'SCANNING' 
+  | 'SCANNED_CONFIRMING' 
+  | 'REJECTED_OPTIONS' 
+  | 'ACCEPTED_ADDING_COMMENT' 
+  | 'SENDING' 
+  | 'DONE';
 
 export default function App() {
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [businessData, setBusinessData] = useState({ businessName: '', businessId: '', phone: '', date: '' });
   const [uiStage, setUiStage] = useState<UI_STAGE>('IDLE');
   const [userComment, setUserComment] = useState<string>('');
   
-  // אפס חיכוך - פיענוח אוטומטי ברגע שנבחר קובץ
   useEffect(() => {
     if (imageFile) {
       handleAutoScan();
@@ -41,7 +37,6 @@ export default function App() {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
       setBusinessData({ businessName: '', businessId: '', phone: '', date: '' });
       setUserComment('');
     }
@@ -87,7 +82,6 @@ export default function App() {
   const handleSendToSystem = async (finalComment: string) => {
     setUiStage('SENDING');
     try {
-      // הלינק המעודכן שלך הוכנס לכאן באופן קבוע
       const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz47gYaqggN0HVOSQ5e8eDHjh2ivLGNjQHpt76UywC0Bpa48aTZgsm0QY5rUag3Hbs/exec"; 
       
       const payload = {
@@ -110,13 +104,11 @@ export default function App() {
 
   const handleReset = () => {
     setImageFile(null);
-    setPreviewUrl(null);
     setBusinessData({ businessName: '', businessId: '', phone: '', date: '' });
     setUserComment('');
     setUiStage('IDLE');
   };
 
-  // עיצובים
   const headerStyle = { color: '#fff', borderBottom: '2px solid #D4AF37', paddingBottom: '10px', margin: '0 0 15px 0', fontSize: '1.4rem' };
   const choiceButtonStyle = { padding: '15px', borderRadius: '12px', border: '2px solid #D4AF37', backgroundColor: '#fff', color: COLORS.primaryBlue, fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', flex: 1 };
   const dialogButtonStyle = { padding: '12px 20px', borderRadius: '10px', border: 'none', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', margin: '5px', flex: 1, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' };
