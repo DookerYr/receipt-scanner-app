@@ -55,26 +55,43 @@ export default function App() {
   const handleSendToSystem = async () => {
     setIsSending(true);
     try {
-      // https://script.google.com/macros/s/AKfycbxUq2iKVvDunkE3rX15cmvGrZdM39T37WLCV4QgbsiKz7sP9RLOJJrAC-pslZFmbRU/exec
-      const WEBHOOK_URL = "YOUR_MAKE_WEBHOOK_URL_HERE"; 
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(extractedData)
+      const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz47gYaqggN0HVOSQ5e8eDHjh2ivLGNjQHpt76UywC0Bpa48aTZgsm0QY5rUag3Hbs/exec"; 
+   
+      const payload = JSON.stringify({
+        businessName: extractedData.businessName || "",
+        businessId: extractedData.businessId || "",
+        phone: extractedData.phone || "",
+        date: extractedData.date || "",
+        moreInfo: "דיווח מהאפליקציה"
       });
 
-      if (response.ok) {
-        alert("✅ הדיווח נשלח בהצלחה!");
-      } else {
-        alert("❌ תקלה בשליחת הדיווח.");
-      }
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors', 
+        body: payload
+      });
+
+      alert("✅ הדיווח נשלח! בדוק עכשיו את הגיליון.");
+      setExtractedData(null);
+
     } catch (error) {
-      console.error("Webhook error:", error);
-      alert("❌ לא הצלחנו ליצור קשר עם המערכת.");
+      console.error("Fetch Error:", error);
+      alert("❌ תקלה בשליחה. בדוק את ה-Console.");
     } finally {
       setIsSending(false);
     }
   };
+
+      alert("✅ הדיווח נשלח! בדוק עכשיו את הגיליון.");
+      setExtractedData(null);
+
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      alert("❌ תקלה בשליחה. בדוק את ה-Console.");
+    } finally {
+      setIsSending(false);
+    };
+  
 
   return (
     <div style={{ fontFamily: 'system-ui', padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
