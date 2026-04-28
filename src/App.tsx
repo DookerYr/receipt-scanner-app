@@ -26,6 +26,7 @@ export default function App() {
       reader.onloadend = async () => {
         const base64Data = (reader.result as string).split(',')[1];
         
+        // שליחה לפונקציית השרת של נטליפיי
         const response = await fetch('/.netlify/functions/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -46,52 +47,47 @@ export default function App() {
       };
       reader.readAsDataURL(imageFile);
     } catch (error) {
-      console.error("שגיאת תקשורת:", error);
-      alert("לא הצלחנו להתחבר לשרת.");
+      console.error("Scan error:", error);
+      alert("שגיאה בתקשורת עם שרת הסריקה.");
       setIsScanning(false);
     }
   };
 
   const handleSendToSystem = async () => {
+    if (!extractedData) return;
     setIsSending(true);
+    
     try {
+      // כאן מדביקים את הלינק של ה-Web App מגוגל שיטס (זה שמסתיים ב-/exec)
       const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz47gYaqggN0HVOSQ5e8eDHjh2ivLGNjQHpt76UywC0Bpa48aTZgsm0QY5rUag3Hbs/exec"; 
-   
-      const payload = JSON.stringify({
+      
+      const payload = {
         businessName: extractedData.businessName || "",
         businessId: extractedData.businessId || "",
         phone: extractedData.phone || "",
         date: extractedData.date || "",
         moreInfo: "דיווח מהאפליקציה"
-      });
+      };
 
+      // שליחה לגוגל שיטס בפורמט שגוגל אוהב
       await fetch(WEBHOOK_URL, {
         method: 'POST',
         mode: 'no-cors', 
-        body: payload
+        body: JSON.stringify(payload)
       });
 
-      alert("✅ הדיווח נשלח! בדוק עכשיו את הגיליון.");
+      alert("✅ הדיווח נשלח בהצלחה למאגר הנתונים!");
       setExtractedData(null);
+      setImageFile(null);
+      setPreviewUrl(null);
 
     } catch (error) {
-      console.error("Fetch Error:", error);
-      alert("❌ תקלה בשליחה. בדוק את ה-Console.");
+      console.error("Send error:", error);
+      alert("❌ תקלה בשליחת הנתונים. נסה שוב.");
     } finally {
       setIsSending(false);
     }
   };
-
-      alert("✅ הדיווח נשלח! בדוק עכשיו את הגיליון.");
-      setExtractedData(null);
-
-    } catch (error) {
-      console.error("Fetch Error:", error);
-      alert("❌ תקלה בשליחה. בדוק את ה-Console.");
-    } finally {
-      setIsSending(false);
-    };
-  
 
   return (
     <div style={{ fontFamily: 'system-ui', padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
@@ -102,53 +98,20 @@ export default function App() {
       </p>
 
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '20px 0' }}>
-        
-        {/* כפתור צילום במצלמה */}
         <label style={{
-          backgroundColor: '#0070d1',
-          color: 'white',
-          padding: '12px 15px',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '5px',
-          fontWeight: 'bold'
+          backgroundColor: '#0070d1', color: 'white', padding: '12px 15px', borderRadius: '8px',
+          cursor: 'pointer', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', fontWeight: 'bold'
         }}>
           <span>📸 צלם קבלה</span>
-          <input 
-            type="file" 
-            accept="image/*" 
-            capture="environment" 
-            onChange={handleImageChange} 
-            style={{ display: 'none' }} 
-          />
+          <input type="file" accept="image/*" capture="environment" onChange={handleImageChange} style={{ display: 'none' }} />
         </label>
 
-        {/* כפתור בחירה מהגלריה */}
         <label style={{
-          backgroundColor: '#f0f2f5',
-          color: '#333',
-          padding: '12px 15px',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          border: '1px solid #ccc',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '5px',
-          fontWeight: 'bold'
+          backgroundColor: '#f0f2f5', color: '#333', padding: '12px 15px', borderRadius: '8px',
+          cursor: 'pointer', border: '1px solid #ccc', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', fontWeight: 'bold'
         }}>
           <span>🖼️ מהגלריה</span>
-          <input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleImageChange} 
-            style={{ display: 'none' }} 
-          />
+          <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
         </label>
       </div>
 
@@ -158,25 +121,13 @@ export default function App() {
             onClick={handleScan} 
             disabled={isScanning}
             style={{
-              backgroundColor: isScanning ? '#ccc' : '#003580',
-              color: 'white',
-              padding: '12px 20px',
-              border: 'none',
-              borderRadius: '5px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: isScanning ? 'not-allowed' : 'pointer',
-              marginBottom: '15px',
-              width: '100%'
+              backgroundColor: isScanning ? '#ccc' : '#003580', color: 'white', padding: '12px 20px',
+              border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', width: '100%', marginBottom: '15px'
             }}
           >
             {isScanning ? 'מנתח נתוני עסק... ⏳' : '🔍 חלץ נתוני זיהוי'}
           </button>
-          <img 
-            src={previewUrl} 
-            alt="קבלה שנסרקה" 
-            style={{ width: '100%', borderRadius: '4px', maxHeight: '250px', objectFit: 'contain' }} 
-          />
+          <img src={previewUrl} alt="Preview" style={{ width: '100%', borderRadius: '4px', maxHeight: '250px', objectFit: 'contain' }} />
         </div>
       )}
 
@@ -192,16 +143,8 @@ export default function App() {
             onClick={handleSendToSystem} 
             disabled={isSending}
             style={{
-              backgroundColor: isSending ? '#ccc' : '#198754',
-              color: 'white',
-              padding: '12px 20px',
-              border: 'none',
-              borderRadius: '5px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: isSending ? 'not-allowed' : 'pointer',
-              marginTop: '15px',
-              width: '100%'
+              backgroundColor: isSending ? '#ccc' : '#198754', color: 'white', padding: '12px 20px',
+              border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', marginTop: '15px', width: '100%'
             }}
           >
             {isSending ? 'משגר ליד... 🚀' : '📤 דווח על העסק'}
